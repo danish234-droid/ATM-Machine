@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SecureBank ATM</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">PROCESSING...</div>
+</div>
+
+<div class="atm-shell">
+
+  <!-- Header -->
+  <div class="atm-header">
+    <div class="atm-logo">
+      <div class="atm-logo-icon">🏦</div>
+      <div class="atm-brand">SecureBank<span>ATM TERMINAL v2.0</span></div>
+    </div>
+    <div class="atm-time">
+      <span id="clock">00:00:00</span>
+      <span id="dateDisplay" style="font-size:9px;color:var(--text-muted)"></span>
+    </div>
+  </div>
+
+  <!-- Session bar -->
+  <div class="session-bar" id="sessionBar">
+    <span class="session-user" id="sessionName">—</span>
+    <span class="session-timer">⏱ <span id="sessionTimer">02:00</span></span>
+  </div>
+
+  <!-- Screen -->
+  <div class="atm-screen">
+
+    <!-- ===== LOGIN PAGE ===== -->
+    <div class="page active" id="page-login">
+      <div class="pin-welcome">
+        <h1>Welcome</h1>
+        <p>Select your account &amp; enter your 4-digit PIN</p>
+      </div>
+
+      <div class="input-group">
+        <div class="input-label">Select Account</div>
+        <div class="user-selector" id="userSelector"></div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-label">Enter PIN</div>
+        <div class="pin-display" id="pinDisplay">
+          <div class="pin-dot" id="d0"></div>
+          <div class="pin-dot" id="d1"></div>
+          <div class="pin-dot" id="d2"></div>
+          <div class="pin-dot" id="d3"></div>
+        </div>
+      </div>
+
+      <div class="pin-pad">
+        <button class="pin-key" onclick="pinKey('1')">1</button>
+        <button class="pin-key" onclick="pinKey('2')">2</button>
+        <button class="pin-key" onclick="pinKey('3')">3</button>
+        <button class="pin-key" onclick="pinKey('4')">4</button>
+        <button class="pin-key" onclick="pinKey('5')">5</button>
+        <button class="pin-key" onclick="pinKey('6')">6</button>
+        <button class="pin-key" onclick="pinKey('7')">7</button>
+        <button class="pin-key" onclick="pinKey('8')">8</button>
+        <button class="pin-key" onclick="pinKey('9')">9</button>
+        <button class="pin-key clear" onclick="pinClear()">⌫</button>
+        <button class="pin-key" onclick="pinKey('0')">0</button>
+        <button class="pin-key enter" onclick="pinEnter()">ENTER</button>
+      </div>
+
+      <div class="alert" id="loginAlert"></div>
+      <div class="reg-link" onclick="goTo('page-register')">New customer? <span>Create Account →</span></div>
+    </div>
+
+    <!-- ===== REGISTER PAGE ===== -->
+    <div class="page" id="page-register">
+      <div class="section-title">👤 Create Account</div>
+
+      <div class="input-group">
+        <div class="reg-steps">
+          <div class="reg-step active" id="rs0"></div>
+          <div class="reg-step" id="rs1"></div>
+          <div class="reg-step" id="rs2"></div>
+        </div>
+        <div class="input-label" id="regStepLabel">Step 1 – Personal Details</div>
+      </div>
+
+      <!-- Step 1: name + opening balance -->
+      <div id="regStep1">
+        <div class="input-group" style="margin-bottom:12px">
+          <div class="input-label">Full Name</div>
+          <input type="text" class="atm-input sm" id="regName" placeholder="e.g. Sara Khan" maxlength="30" autocomplete="off"/>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Opening Balance ($)</div>
+          <input type="number" class="atm-input sm" id="regBalance" placeholder="Min. $100" min="100"/>
+        </div>
+      </div>
+
+      <!-- Step 2: set PIN -->
+      <div id="regStep2" style="display:none">
+        <div class="input-group">
+          <div class="input-label">Set Your 4-Digit PIN</div>
+          <div class="pin-display">
+            <div class="pin-dot" id="rp0"></div>
+            <div class="pin-dot" id="rp1"></div>
+            <div class="pin-dot" id="rp2"></div>
+            <div class="pin-dot" id="rp3"></div>
+          </div>
+        </div>
+        <div class="pin-pad" style="margin-top:8px">
+          <button class="pin-key" onclick="regPinKey('1')">1</button>
+          <button class="pin-key" onclick="regPinKey('2')">2</button>
+          <button class="pin-key" onclick="regPinKey('3')">3</button>
+          <button class="pin-key" onclick="regPinKey('4')">4</button>
+          <button class="pin-key" onclick="regPinKey('5')">5</button>
+          <button class="pin-key" onclick="regPinKey('6')">6</button>
+          <button class="pin-key" onclick="regPinKey('7')">7</button>
+          <button class="pin-key" onclick="regPinKey('8')">8</button>
+          <button class="pin-key" onclick="regPinKey('9')">9</button>
+          <button class="pin-key clear" onclick="regPinClear()">⌫</button>
+          <button class="pin-key" onclick="regPinKey('0')">0</button>
+          <button class="pin-key enter" onclick="regPinNext()">NEXT</button>
+        </div>
+      </div>
+
+      <!-- Step 3: confirm PIN -->
+      <div id="regStep3" style="display:none">
+        <div class="input-group">
+          <div class="input-label">Confirm Your PIN</div>
+          <div class="pin-display">
+            <div class="pin-dot" id="rc0"></div>
+            <div class="pin-dot" id="rc1"></div>
+            <div class="pin-dot" id="rc2"></div>
+            <div class="pin-dot" id="rc3"></div>
+          </div>
+        </div>
+        <div class="pin-pad" style="margin-top:8px">
+          <button class="pin-key" onclick="regConfKey('1')">1</button>
+          <button class="pin-key" onclick="regConfKey('2')">2</button>
+          <button class="pin-key" onclick="regConfKey('3')">3</button>
+          <button class="pin-key" onclick="regConfKey('4')">4</button>
+          <button class="pin-key" onclick="regConfKey('5')">5</button>
+          <button class="pin-key" onclick="regConfKey('6')">6</button>
+          <button class="pin-key" onclick="regConfKey('7')">7</button>
+          <button class="pin-key" onclick="regConfKey('8')">8</button>
+          <button class="pin-key" onclick="regConfKey('9')">9</button>
+          <button class="pin-key clear" onclick="regConfClear()">⌫</button>
+          <button class="pin-key" onclick="regConfKey('0')">0</button>
+          <button class="pin-key enter" onclick="regConfirm()">DONE</button>
+        </div>
+      </div>
+
+      <div class="alert" id="regAlert"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="regBack()">← Back</button>
+        <button class="btn btn-primary" id="regNextBtn" onclick="regNext()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="page" id="page-dashboard">
+      <div class="balance-card">
+        <div class="balance-card-inner">
+          <div class="balance-label">Available Balance</div>
+          <div class="balance-amount"><span class="balance-currency">$</span><span id="dashBalance">0.00</span></div>
+          <div class="welcome-user">Welcome, <strong id="dashUser">User</strong></div>
+          <div class="acct-number" id="dashAcct"></div>
+        </div>
+      </div>
+      <div class="menu-grid">
+        <button class="menu-btn green"  onclick="goTo('page-deposit')"><span class="menu-icon">💵</span>Deposit</button>
+        <button class="menu-btn purple" onclick="goTo('page-withdraw')"><span class="menu-icon">💸</span>Withdraw</button>
+        <button class="menu-btn teal"   onclick="goTo('page-transfer')"><span class="menu-icon">🔄</span>Transfer</button>
+        <button class="menu-btn orange" onclick="goTo('page-bills')"><span class="menu-icon">💰</span>Pay Bills</button>
+        <button class="menu-btn"        onclick="goTo('page-history')"><span class="menu-icon">📋</span>History</button>
+        <button class="menu-btn"        onclick="goTo('page-change-pin')"><span class="menu-icon">🔐</span>Change PIN</button>
+        <button class="menu-btn danger full" onclick="logout()"><span class="menu-icon">🚪</span>Logout</button>
+      </div>
+    </div>
+
+    <!-- ===== DEPOSIT ===== -->
+    <div class="page" id="page-deposit">
+      <div class="section-title">💵 Deposit Cash</div>
+      <div class="input-group">
+        <div class="input-label">Quick Amounts</div>
+        <div class="quick-amounts">
+          <button class="quick-btn" onclick="setAmount(50)">$50</button>
+          <button class="quick-btn" onclick="setAmount(100)">$100</button>
+          <button class="quick-btn" onclick="setAmount(200)">$200</button>
+          <button class="quick-btn" onclick="setAmount(500)">$500</button>
+          <button class="quick-btn" onclick="setAmount(1000)">$1,000</button>
+          <button class="quick-btn" onclick="setAmount(2000)">$2,000</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <div class="input-label">Or Enter Amount</div>
+        <input type="number" class="atm-input" id="depositAmount" placeholder="Enter amount..." min="1"/>
+      </div>
+      <div class="alert" id="depositAlert"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goTo('page-dashboard')">← Back</button>
+        <button class="btn btn-success" onclick="deposit()">Deposit ✓</button>
+      </div>
+    </div>
+
+    <!-- ===== WITHDRAW ===== -->
+    <div class="page" id="page-withdraw">
+      <div class="section-title">💸 Withdraw Cash</div>
+      <div class="input-group">
+        <div class="input-label">Quick Amounts</div>
+        <div class="quick-amounts">
+          <button class="quick-btn" onclick="setAmount(20)">$20</button>
+          <button class="quick-btn" onclick="setAmount(50)">$50</button>
+          <button class="quick-btn" onclick="setAmount(100)">$100</button>
+          <button class="quick-btn" onclick="setAmount(200)">$200</button>
+          <button class="quick-btn" onclick="setAmount(500)">$500</button>
+          <button class="quick-btn" onclick="setAmount(1000)">$1,000</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <div class="input-label">Or Enter Amount</div>
+        <input type="number" class="atm-input" id="withdrawAmount" placeholder="Enter amount..." min="1"/>
+      </div>
+      <div class="alert" id="withdrawAlert"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goTo('page-dashboard')">← Back</button>
+        <button class="btn btn-danger" onclick="withdraw()">Withdraw →</button>
+      </div>
+    </div>
+
+    <!-- ===== RECEIPT PAGE ===== -->
+    <div class="page" id="page-receipt">
+      <div class="section-title">🧾 Transaction Receipt</div>
+      <div class="receipt-box" id="receiptBox"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary full" onclick="goTo('page-dashboard')" style="flex:1">← Back to Menu</button>
+      </div>
+    </div>
+
+    <!-- ===== HISTORY ===== -->
+    <div class="page" id="page-history">
+      <div class="section-title">📋 Transaction History</div>
+      <div class="tx-list" id="txList"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" style="flex:1" onclick="goTo('page-dashboard')">← Back to Menu</button>
+      </div>
+    </div>
+
+    <!-- ===== CHANGE PIN ===== -->
+    <div class="page" id="page-change-pin">
+      <div class="section-title">🔐 Change PIN</div>
+      <div class="input-group">
+        <div class="pin-steps">
+          <div class="pin-step active" id="cpStep0"></div>
+          <div class="pin-step" id="cpStep1"></div>
+          <div class="pin-step" id="cpStep2"></div>
+        </div>
+        <div class="input-label" id="cpLabel">Step 1 – Enter Current PIN</div>
+      </div>
+      <div class="input-group">
+        <div class="pin-display">
+          <div class="pin-dot" id="cp0"></div>
+          <div class="pin-dot" id="cp1"></div>
+          <div class="pin-dot" id="cp2"></div>
+          <div class="pin-dot" id="cp3"></div>
+        </div>
+      </div>
+      <div class="pin-pad">
+        <button class="pin-key" onclick="cpKey('1')">1</button>
+        <button class="pin-key" onclick="cpKey('2')">2</button>
+        <button class="pin-key" onclick="cpKey('3')">3</button>
+        <button class="pin-key" onclick="cpKey('4')">4</button>
+        <button class="pin-key" onclick="cpKey('5')">5</button>
+        <button class="pin-key" onclick="cpKey('6')">6</button>
+        <button class="pin-key" onclick="cpKey('7')">7</button>
+        <button class="pin-key" onclick="cpKey('8')">8</button>
+        <button class="pin-key" onclick="cpKey('9')">9</button>
+        <button class="pin-key clear" onclick="cpClear()">⌫</button>
+        <button class="pin-key" onclick="cpKey('0')">0</button>
+        <button class="pin-key enter" onclick="cpEnter()">NEXT</button>
+      </div>
+      <div class="alert" id="cpAlert"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="resetCP();goTo('page-dashboard')">← Cancel</button>
+      </div>
+    </div>
+
+
+    <!-- ===== FUND TRANSFER ===== -->
+    <div class="page" id="page-transfer">
+      <div class="section-title">🔄 Fund Transfer</div>
+      <div class="input-group">
+        <div class="input-label">Transfer To</div>
+        <select class="atm-input sm" id="transferRecipient">
+          <option value="">— Select recipient account —</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <div class="input-label">Quick Amounts</div>
+        <div class="quick-amounts">
+          <button class="quick-btn" onclick="setTransferAmount(100)">$100</button>
+          <button class="quick-btn" onclick="setTransferAmount(200)">$200</button>
+          <button class="quick-btn" onclick="setTransferAmount(500)">$500</button>
+          <button class="quick-btn" onclick="setTransferAmount(1000)">$1,000</button>
+          <button class="quick-btn" onclick="setTransferAmount(2000)">$2,000</button>
+          <button class="quick-btn" onclick="setTransferAmount(5000)">$5,000</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <div class="input-label">Amount ($)</div>
+        <input type="number" class="atm-input" id="transferAmount" placeholder="Enter amount..." min="1"/>
+      </div>
+      <div class="alert" id="transferAlert"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goTo('page-dashboard')">← Back</button>
+        <button class="btn btn-teal" onclick="transfer()">Transfer →</button>
+      </div>
+    </div>
+
+    <!-- ===== BILL PAYMENT ===== -->
+    <div class="page" id="page-bills">
+      <div class="section-title">💰 Pay Bills</div>
+      <div class="bill-grid">
+        <button class="bill-card" id="bill-mobile"      onclick="selectBill('mobile')"     >📱<span>Mobile Top-up</span></button>
+        <button class="bill-card" id="bill-electricity" onclick="selectBill('electricity')" >💡<span>Electricity</span></button>
+        <button class="bill-card" id="bill-internet"    onclick="selectBill('internet')"    >🌐<span>Internet</span></button>
+        <button class="bill-card" id="bill-rent"        onclick="selectBill('rent')"        >🏠<span>Rent</span></button>
+      </div>
+      <div id="billAmountSection" style="display:none">
+        <div class="input-group" style="margin-top:4px">
+          <div class="input-label">Quick Amounts</div>
+          <div class="quick-amounts">
+            <button class="quick-btn" onclick="setBillAmount(20)">$20</button>
+            <button class="quick-btn" onclick="setBillAmount(50)">$50</button>
+            <button class="quick-btn" onclick="setBillAmount(100)">$100</button>
+            <button class="quick-btn" onclick="setBillAmount(200)">$200</button>
+            <button class="quick-btn" onclick="setBillAmount(500)">$500</button>
+            <button class="quick-btn" onclick="setBillAmount(1000)">$1,000</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Or Enter Amount ($)</div>
+          <input type="number" class="atm-input" id="billAmount" placeholder="Enter amount..." min="1"/>
+        </div>
+      </div>
+      <div class="alert" id="billAlert"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goTo('page-dashboard')">← Back</button>
+        <button class="btn btn-orange" id="billPayBtn" onclick="payBill()" style="display:none">Pay Now ✓</button>
+      </div>
+    </div>
+
+  </div><!-- end .atm-screen -->
+
+  <!-- Footer -->
+  <div class="atm-footer">
+    <div class="atm-footer-text">© 2025 SecureBank N.A.</div>
+    <div class="secure-badge"><div class="secure-dot"></div>256-BIT ENCRYPTED</div>
+  </div>
+
+</div><!-- end .atm-shell -->
+
+<script src="script.js"></script>
+</body>
+</html>
